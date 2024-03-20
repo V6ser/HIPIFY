@@ -6,6 +6,26 @@ include(GNUInstallDirs)
 
 option(HIPIFY_INCLUDE_IN_HIP_SDK "Include HIPIFY in HIP SDK" OFF)
 
+#<<<<<<< Updated upstream
+#=======
+#if(HIPIFY_CLANG_TESTS OR HIPIFY_CLANG_TESTS_ONLY)
+#  set(HIPIFY_TEST "ON")
+#else()
+#  set(HIPIFY_TEST "OFF")
+#endif()
+
+#if(HIPIFY_CLANG_TESTS_ONLY)
+#  set(HIPIFY_BUILD "OFF")
+#else()
+#  set(HIPIFY_BUILD "ON")
+#endif()
+include_directories("C:/Progra~2/Windows Kits/10/Include/10.0.20348.0" "C:/Progra~2/Windows Kits/10/Include/10.0.22621.0/ucrt")
+#message(STATUS "HIPIFY config:")
+#message(STATUS "   - Build hipify-clang : ${HIPIFY_BUILD}")
+#message(STATUS "   - Test  hipify-clang : ${HIPIFY_TEST}")
+#message(STATUS "   - Is part of HIP SDK : ${HIPIFY_INCLUDE_IN_HIP_SDK}")
+
+#>>>>>>> Stashed changes
 if(HIPIFY_INCLUDE_IN_HIP_SDK)
   if(NOT WIN32)
     message(FATAL_ERROR "HIPIFY_INCLUDE_IN_HIP_SDK is only supported on Windows")
@@ -13,6 +33,8 @@ if(HIPIFY_INCLUDE_IN_HIP_SDK)
     message(FATAL_ERROR "HIPIFY_INCLUDE_IN_HIP_SDK is not targeting Visual Studio")
   endif()
 else()
+  #include_directories("c:/hip/lib/clang/17.0.0/include" "c:/hip/lib/cmake/clang" "c:/hip" "c:/hip/lib/clang/17.0.0")
+  #find_package(Clang REQUIRED CONFIG PATHS CLANG_PATH)
   find_package(LLVM REQUIRED CONFIG PATHS ${CMAKE_PREFIX_PATH})
 
   message(STATUS "Found LLVM ${LLVM_PACKAGE_VERSION}:")
@@ -51,7 +73,7 @@ if (NOT HIPIFY_CLANG_TESTS_ONLY)
     if(LLVM_EXTERNAL_CLANG_SOURCE_DIR)
       target_include_directories(hipify-clang
         PRIVATE
-          ${LLVM_BINARY_DIR}/tools/clang/include
+          ${LLVM_BINARY_DIR}/lib/clang/17/include
           ${LLVM_EXTERNAL_CLANG_SOURCE_DIR}/include)
     endif()
 
@@ -120,7 +142,14 @@ if (NOT HIPIFY_CLANG_TESTS_ONLY)
 
   if(MSVC)
     target_link_libraries(hipify-clang PRIVATE version)
-    target_compile_options(hipify-clang PRIVATE ${STD} /Od /GR- /EHs- /EHc-)
+#<<<<<<< Updated upstream
+#    target_compile_options(hipify-clang PRIVATE ${STD} /Od /GR- /EHs- /EHc-)
+#=======
+#    target_compile_options(hipify-clang PRIVATE ${STD} /Od /GR- /EHs- /EHc- /MP)
+#    if((LLVM_PACKAGE_VERSION VERSION_EQUAL "17.0.0" OR LLVM_PACKAGE_VERSION VERSION_GREATER "18.0.0") AND MSVC_VERSION VERSION_GREATER "1919")
+#      target_compile_options(hipify-clang PRIVATE /Zc:preprocessor)
+#    endif()
+#>>>>>>> Stashed changes
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /SUBSYSTEM:WINDOWS")
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD} -pthread -fno-rtti -fvisibility-inlines-hidden")
@@ -146,6 +175,10 @@ if (NOT HIPIFY_CLANG_TESTS_ONLY)
   endif()
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CFLAGS} -DHIPIFY_CLANG_RES=\\\"${LLVM_LIBRARY_DIRS}/clang/${LIB_CLANG_RES}\\\" ${addr_var}")
 
+# Append /FORCE:MULTIPLE to linker flags
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Xlinker /FORCE:MULTIPLE")
+set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -Xlinker /SUBSYSTEM:WINDOWS")
+
   set(INSTALL_PATH_DOC_STRING "hipify-clang Installation Path")
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
     set(CMAKE_INSTALL_PREFIX "${PROJECT_BINARY_DIR}/dist" CACHE PATH ${INSTALL_PATH_DOC_STRING} FORCE)
@@ -161,6 +194,8 @@ if (NOT HIPIFY_CLANG_TESTS_ONLY)
     USE_SOURCE_PERMISSIONS
     PATTERN "hipify-perl"
     PATTERN "*.sh")
+set(CMAKE_C_COMPILER "c:/Program Files/LLVM/bin/clang.exe")
+set(CMAKE_CXX_COMPILER "c:/Program Files/LLVM/bin/clang++.exe")
 
   # Headers are already included in HIP SDK, so skip those if including HIPIFY in HIP SDK.
   if(NOT HIPIFY_INCLUDE_IN_HIP_SDK)
@@ -205,7 +240,7 @@ install(
       include(hipify-backward-compat.cmake)
     endif()
 
-    set(CPACK_PACKAGING_INSTALL_PREFIX "/opt/rocm" CACHE PATH "HIP Package Installation Path")
+    set(CPACK_PACKAGING_INSTALL_PREFIX "c:/hip" CACHE PATH "HIP Package Installation Path")
     set(BUILD_DIR ${CMAKE_CURRENT_BINARY_DIR}/packages/hipify-clang)
 
     configure_file(packaging/hipify-clang.txt ${BUILD_DIR}/CMakeLists.txt @ONLY)
@@ -235,7 +270,7 @@ if(HIPIFY_CLANG_TESTS OR HIPIFY_CLANG_TESTS_ONLY)
     endif()
   endfunction()
 
-  require_program(lit)
+  require_program("llvm-lit.py")
   require_program(FileCheck)
 
   find_package(CUDA REQUIRED)

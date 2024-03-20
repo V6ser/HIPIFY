@@ -1213,7 +1213,7 @@ public:
 #if LLVM_VERSION_MAJOR > 6
                         , clang::SrcMgr::CharacteristicKind FileType
 #endif
-                         ) override {
+                        )/*  override*/ { 
 #if LLVM_VERSION_MAJOR < 15
     auto f = file;
 #else

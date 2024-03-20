@@ -22,6 +22,8 @@ THE SOFTWARE.
 
 #pragma once
 
+#include <cstdarg>
+
 #include "llvm/ADT/StringRef.h"
 #include <set>
 #include <map>
