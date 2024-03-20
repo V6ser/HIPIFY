@@ -142,18 +142,11 @@ if (NOT HIPIFY_CLANG_TESTS_ONLY)
 
   if(MSVC)
     target_link_libraries(hipify-clang PRIVATE version)
-#<<<<<<< Updated upstream
-#    target_compile_options(hipify-clang PRIVATE ${STD} /Od /GR- /EHs- /EHc-)
-#=======
-#    target_compile_options(hipify-clang PRIVATE ${STD} /Od /GR- /EHs- /EHc- /MP)
-#    if((LLVM_PACKAGE_VERSION VERSION_EQUAL "17.0.0" OR LLVM_PACKAGE_VERSION VERSION_GREATER "18.0.0") AND MSVC_VERSION VERSION_GREATER "1919")
-#      target_compile_options(hipify-clang PRIVATE /Zc:preprocessor)
-#    endif()
-#>>>>>>> Stashed changes
     set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} /SUBSYSTEM:WINDOWS")
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${STD} -pthread -fno-rtti -fvisibility-inlines-hidden")
   endif()
+  set(HIPIFY_CLANG_RES "c:/PROGRA~1/LLVM/lib/clang/17")
 
   # Address Sanitize Flag.
   if(ADDRESS_SANITIZER)
@@ -176,8 +169,10 @@ if (NOT HIPIFY_CLANG_TESTS_ONLY)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${EXTRA_CFLAGS} -DHIPIFY_CLANG_RES=\\\"${LLVM_LIBRARY_DIRS}/clang/${LIB_CLANG_RES}\\\" ${addr_var}")
 
 # Append /FORCE:MULTIPLE to linker flags
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Xlinker /FORCE:MULTIPLE")
-set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -Xlinker /SUBSYSTEM:WINDOWS")
+if(CMAKE_HOST_WIN32)
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Xlinker /FORCE:MULTIPLE -Xlinker version.lib")
+  set(CMAKE_CXX_LINK_FLAGS "${CMAKE_CXX_LINK_FLAGS} -Xlinker /SUBSYSTEM:WINDOWS")
+endif()
 
   set(INSTALL_PATH_DOC_STRING "hipify-clang Installation Path")
   if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
